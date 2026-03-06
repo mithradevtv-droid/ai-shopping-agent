@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CartMind — AI Shopping Assistant</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap');
+
+:root {
+  --bg: #f5f0e8;
+  --surface: #ffffff;
+  --ink: #1a1510;
+  --dim: #8a7f70;
+  --accent: #e8460a;
+  --accent2: #1a6b3a;
+  --line: rgba(26,21,16,0.1);
+  --card-bg: #fffdf9;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+}
+
+/* ── HERO ── */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  position: relative;
+  overflow: hidden;
+  transition: min-height 0.6s cubic-bezier(0.4,0,0.2,1);
+}
+
+.hero.shrunk {
+  min-height: 220px;
+  justify-content: flex-end;
+  padding-bottom: 32px;
+}
+
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 10% 20%, rgba(232,70,10,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 80% at 90% 80%, rgba(26,107,58,0.07) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.wordmark {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 48px;
+  transition: all 0.5s;
+  opacity: 1;
+}
+
+.hero.shrunk .wordmark {
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.hero-title {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(2.8rem, 7vw, 5.5rem);
+  line-height: 1.05;
+  text-align: center;
+  max-width: 700px;
+  margin-bottom: 20px;
+  transition: all 0.5s;
+}
+
+.hero-title em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.hero.shrunk .hero-title {
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  margin-bottom: 12px;
+}
+
+.hero-sub {
+  color: var(--dim);
+  font-size: 16px;
+  text-align: center;
+  max-width: 440px;
+  line-height: 1.7;
+  margin-bottom: 48px;
+  transition: all 0.5s;
+}
+
+.hero.shrunk .hero-sub {
+  display: none;
+}
+
+/* ── SEARCH ── */
+.search-wrap {
+  width: 100%;
+  max-width: 640px;
+  position: relative;
+}
+
+.search-box {
+  width: 100%;
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: 56px;
+  padding: 18px 64px 18px 28px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 24px rgba(26,21,16,0.06);
+}
+
+.search-box:focus {
+  border-color: var(--accent);
+  box-shadow: 0 4px 32px rgba(232,70,10,0.12);
+}
+
+.search-box::placeholder { color: var(--dim); }
+
+.search-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.search-btn:hover { background: #c73a08; transform: translateY(-50%) scale(1.05); }
+.search-btn:active { transform: translateY(-50%) scale(0.97); }
+
+.search-btn svg { width: 18px; height: 18px; fill: white; }
+
+.examples {
+  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  transition: all 0.5s;
+}
+
+.hero.shrunk .examples { display: none; }
+
+.example-chip {
+  background: rgba(26,21,16,0.06);
+  border: none;
+  border-radius: 20px;
+  padding: 7px 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: var(--dim);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.example-chip:hover {
+  background: var(--accent);
+  color: white;
+}
+
+/* ── RESULTS SECTION ── */
+#results-section {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 20px 80px;
+  display: none;
+}
+
+#results-section.visible { display: block; }
+
+/* ── PREFS PILL ── */
+.prefs-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 32px;
+  animation: fadeUp 0.4s ease both;
+}
+
+.pref-pill {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 12px;
+  color: var(--dim);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.pref-pill .label {
+  font-weight: 500;
+  color: var(--ink);
+}
+
+/* ── RESULTS HEADER ── */
+.results-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  animation: fadeUp 0.4s 0.1s ease both;
+}
+
+.results-count {
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+/* ── PRODUCT GRID ── */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.product-card {
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+  animation: fadeUp 0.5s ease both;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(26,21,16,0.1);
+  border-color: rgba(232,70,10,0.3);
+}
+
+.product-card:nth-child(1) { animation-delay: 0.05s; }
+.product-card:nth-child(2) { animation-delay: 0.1s; }
+.product-card:nth-child(3) { animation-delay: 0.15s; }
+.product-card:nth-child(4) { animation-delay: 0.2s; }
+.product-card:nth-child(5) { animation-delay: 0.25s; }
+
+.product-img {
+  width: 100%;
+  height: 180px;
+  object-fit: contain;
+  background: #f8f5f0;
+  padding: 16px;
+}
+
+.product-img-placeholder {
+  width: 100%;
+  height: 180px;
+  background: linear-gradient(135deg, #f0ebe0, #e8e0d0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+}
+
+.product-body {
+  padding: 16px 20px 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-source {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent2);
+  margin-bottom: 6px;
+}
+
+.product-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-bottom: 10px;
+  flex: 1;
+}
+
+.product-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.product-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--dim);
+}
+
+.star { color: #f5a623; font-size: 13px; }
+
+.product-reviews {
+  font-size: 11px;
+  color: var(--dim);
+}
+
+.product-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.product-price {
+  font-family: 'Syne', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.product-price span {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--dim);
+}
+
+.product-btn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.product-btn:hover { background: #c73a08; transform: scale(1.03); }
+
+/* ── STATES ── */
+.loading {
+  text-align: center;
+  padding: 80px 20px;
+  display: none;
+}
+
+.loading.visible { display: block; }
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--line);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 20px;
+}
+
+.loading-text {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-size: 1.2rem;
+  color: var(--dim);
+}
+
+.loading-steps {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--dim);
+  letter-spacing: 0.05em;
+}
+
+.error-msg {
+  background: #fff5f3;
+  border: 1px solid rgba(232,70,10,0.2);
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  color: var(--accent);
+  font-size: 14px;
+  display: none;
+}
+
+.error-msg.visible { display: block; }
+
+.no-results {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--dim);
+  display: none;
+}
+
+.no-results.visible { display: block; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
+</head>
+<body>
+
+<section class="hero" id="hero">
+  <div class="hero-bg"></div>
+  <div class="wordmark">CartMind</div>
+  <h1 class="hero-title">Shop smarter with <em>AI</em> that actually gets you</h1>
+  <p class="hero-sub">Just tell us what you want in plain English. We'll find, filter, and rank the best options for you.</p>
+
+  <div class="search-wrap">
+    <input
+      class="search-box"
+      id="search-input"
+      type="text"
+      placeholder="e.g. best camera phone under ₹25000, no Chinese brands"
+      autocomplete="off"
+    />
+    <button class="search-btn" id="search-btn" onclick="doSearch()">
+      <svg viewBox="0 0 24 24"><path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none"/></svg>
+    </button>
+  </div>
+
+  <div class="examples">
+    <button class="example-chip" onclick="setQuery('gaming laptop under ₹60000')">Gaming laptop under ₹60k</button>
+    <button class="example-chip" onclick="setQuery('best wireless earbuds under ₹3000')">Earbuds under ₹3k</button>
+    <button class="example-chip" onclick="setQuery('smartwatch with long battery life under ₹5000')">Smartwatch long battery</button>
+    <button class="example-chip" onclick="setQuery('best camera phone under ₹25000 no Chinese brands')">Phone, no Chinese brands</button>
+  </div>
+</section>
+
+<section id="results-section">
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <div class="loading-text">Searching for the best deals…</div>
+    <div class="loading-steps" id="loading-steps">Understanding your request…</div>
+  </div>
+
+  <div class="error-msg" id="error-msg"></div>
+  <div class="no-results" id="no-results">
+    <p style="font-size:2rem;margin-bottom:12px">🔍</p>
+    <p>No products found matching your criteria.<br>Try adjusting your budget or removing constraints.</p>
+  </div>
+
+  <div id="results-container" style="display:none">
+    <div class="prefs-bar" id="prefs-bar"></div>
+    <div class="results-header">
+      <div class="results-count" id="results-count"></div>
+    </div>
+    <div class="product-grid" id="product-grid"></div>
+  </div>
+</section>
+
+<script>
+const hero = document.getElementById('hero');
+const resultsSection = document.getElementById('results-section');
+const searchInput = document.getElementById('search-input');
+
+searchInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') doSearch();
+});
+
+function setQuery(q) {
+  searchInput.value = q;
+  searchInput.focus();
+}
+
+const loadingMessages = [
+  "Understanding your request…",
+  "Extracting preferences with AI…",
+  "Searching Google Shopping…",
+  "Filtering & ranking results…",
+  "Almost there…"
+];
+
+async function doSearch() {
+  const query = searchInput.value.trim();
+  if (!query) return;
+
+  // Shrink hero
+  hero.classList.add('shrunk');
+  resultsSection.classList.add('visible');
+
+  // Show loading
+  showState('loading');
+
+  // Cycle loading messages
+  let msgIdx = 0;
+  const msgInterval = setInterval(() => {
+    msgIdx = (msgIdx + 1) % loadingMessages.length;
+    document.getElementById('loading-steps').textContent = loadingMessages[msgIdx];
+  }, 1800);
+
+  try {
+    const res = await fetch('/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query })
+    });
+
+    const data = await res.json();
+    clearInterval(msgInterval);
+
+    if (data.error) {
+      showError(data.error);
+      return;
+    }
+
+    if (!data.results || data.results.length === 0) {
+      showState('no-results');
+      return;
+    }
+
+    renderResults(data);
+
+  } catch (err) {
+    clearInterval(msgInterval);
+    showError('Could not connect to the server. Make sure app.py is running.');
+  }
+}
+
+function showState(state) {
+  document.getElementById('loading').classList.toggle('visible', state === 'loading');
+  document.getElementById('error-msg').classList.toggle('visible', state === 'error');
+  document.getElementById('no-results').classList.toggle('visible', state === 'no-results');
+  document.getElementById('results-container').style.display = state === 'results' ? 'block' : 'none';
+}
+
+function showError(msg) {
+  showState('error');
+  document.getElementById('error-msg').textContent = '⚠️ ' + msg;
+}
+
+function renderResults(data) {
+  showState('results');
+
+  // Prefs bar
+  const prefsBar = document.getElementById('prefs-bar');
+  prefsBar.innerHTML = '';
+  if (data.category) prefsBar.innerHTML += pill('Category', data.category);
+  if (data.budget)   prefsBar.innerHTML += pill('Budget', '₹' + data.budget.toLocaleString('en-IN'));
+  if (data.priorities?.length) prefsBar.innerHTML += pill('Priorities', data.priorities.join(', '));
+  if (data.brand_constraints?.length) prefsBar.innerHTML += pill('Constraints', data.brand_constraints.join(', '));
+
+  // Count
+  document.getElementById('results-count').textContent = `${data.total} result${data.total !== 1 ? 's' : ''} found`;
+
+  // Cards
+  const grid = document.getElementById('product-grid');
+  grid.innerHTML = '';
+
+  data.results.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'product-card';
+
+    const imgHtml = p.image
+      ? `<img class="product-img" src="${p.image}" alt="${p.title}" onerror="this.parentNode.innerHTML='<div class=product-img-placeholder>🛍️</div>'">`
+      : `<div class="product-img-placeholder">🛍️</div>`;
+
+    const ratingHtml = p.rating
+      ? `<div class="product-rating"><span class="star">★</span>${p.rating}${p.reviews ? `<span class="product-reviews">(${p.reviews.toLocaleString()})</span>` : ''}</div>`
+      : '';
+
+    card.innerHTML = `
+      ${imgHtml}
+      <div class="product-body">
+        <div class="product-source">${p.source}</div>
+        <div class="product-title">${p.title}</div>
+        <div class="product-meta">${ratingHtml}</div>
+        <div class="product-footer">
+          <div class="product-price"><span>₹</span>${p.price.toLocaleString('en-IN')}</div>
+          <a class="product-btn" href="${p.url}" target="_blank" rel="noopener">View Deal →</a>
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function pill(label, value) {
+  return `<div class="pref-pill"><span class="label">${label}:</span> ${value}</div>`;
+}
+</script>
+</body>
+</html>

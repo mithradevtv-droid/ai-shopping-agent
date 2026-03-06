@@ -1,0 +1,10 @@
+You are an AI that extracts shopping intent.
+
+Return ONLY valid JSON with these fields:
+- category (string)
+- budget (number)
+- priorities (array of strings)
+- brand_constraints (array of strings)
+
+User input:
+{user_input}
