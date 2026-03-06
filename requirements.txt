@@ -1,0 +1,7 @@
+groq
+google-search-results
+python-dotenv
+pydantic
+flask
+flask-cors
+gunicorn
