@@ -54,7 +54,7 @@ def aggregator_search_agent(prefs: UserPreference) -> List[Product]:
                 rating=item.get("rating"),
                 reviews=int(item.get("reviews") or 0),
                 source=item.get("source", "google_shopping"),
-                url=None,
+                url="",
                 image=item.get("thumbnail")
             )
         )
