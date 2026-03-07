@@ -3,33 +3,12 @@ from serpapi import GoogleSearch
 from models.product import Product
 from models.preference import UserPreference
 import os
-import urllib.parse
 
 SKIP_AS_SEARCH_TERMS = [
     "battery", "battery life", "camera", "performance", "display",
     "storage", "ram", "processor", "screen", "design", "build",
     "sound", "audio", "speaker", "charging", "fast charging"
 ]
-
-def get_best_url(item: dict) -> str:
-    title = item.get("title", "")
-    source = (item.get("source") or "").lower()
-    encoded = urllib.parse.quote_plus(title)
-
-    if "amazon" in source:
-        return f"https://www.amazon.in/s?k={encoded}"
-    elif "flipkart" in source:
-        return f"https://www.flipkart.com/search?q={encoded}"
-    elif "croma" in source:
-        return f"https://www.croma.com/searchB?q={encoded}"
-    elif "reliance" in source or "jiomart" in source:
-        return f"https://www.reliancedigital.in/search?q={encoded}"
-    elif "tata" in source or "cliq" in source:
-        return f"https://www.tatacliq.com/search/?searchCategory=all&text={encoded}"
-    elif "vijay" in source:
-        return f"https://www.vijaysales.com/search/{encoded}"
-    else:
-        return f"https://www.google.com/search?tbm=shop&q={encoded}"
 
 def build_query(prefs: UserPreference) -> str:
     parts = [f"best {prefs.category}"]
@@ -75,7 +54,7 @@ def aggregator_search_agent(prefs: UserPreference) -> List[Product]:
                 rating=item.get("rating"),
                 reviews=int(item.get("reviews") or 0),
                 source=item.get("source", "google_shopping"),
-                url=get_best_url(item),
+                url=None,
                 image=item.get("thumbnail")
             )
         )
