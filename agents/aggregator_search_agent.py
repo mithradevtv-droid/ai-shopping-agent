@@ -55,9 +55,12 @@ def aggregator_search_agent(prefs: UserPreference) -> List[Product]:
                 reviews=int(item.get("reviews") or 0),
                 source=item.get("source", "google_shopping"),
                 url="",
+                product_id=str(item.get("product_id", "")),
                 image=item.get("thumbnail")
+                product_id=item.get("product_id", ""),
             )
         )
 
     print(f"PRODUCTS PARSED: {len(products)}")
     return products
+    

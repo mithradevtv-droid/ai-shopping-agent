@@ -10,3 +10,4 @@ class Product(BaseModel):
     source: str
     url: str
     image: Optional[str] = None
+    product_id: str = ""
