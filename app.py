@@ -19,6 +19,10 @@ CORS(app)
 
 @app.route("/")
 def index():
+    def index():
+    response = send_from_directory("static", "index.html")
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    return response
     return send_from_directory("static", "index.html")
 
 
