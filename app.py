@@ -1,9 +1,3 @@
-"""
-app.py — Flask web server
-Run with: python app.py
-Then open: http://localhost:5000
-"""
-
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import os
@@ -19,11 +13,9 @@ CORS(app)
 
 @app.route("/")
 def index():
-    def index():
     response = send_from_directory("static", "index.html")
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     return response
-    return send_from_directory("static", "index.html")
 
 
 @app.route("/search", methods=["POST"])
@@ -35,14 +27,11 @@ def search():
         return jsonify({"error": "No query provided"}), 400
 
     try:
-        # Run the agent pipeline
         prefs = preference_agent(user_input)
         prefs = normalize_preferences(prefs)
-
         products = aggregator_search_agent(prefs)
         ranked = ranking_agent(products, prefs)
 
-        # Return top 10 results
         results = []
         for p in ranked[:10]:
             results.append({
@@ -57,13 +46,13 @@ def search():
             })
 
         return jsonify({
-            "query":    user_input,
-            "category": prefs.category,
-            "budget":   prefs.budget,
-            "priorities": prefs.priorities,
+            "query":             user_input,
+            "category":          prefs.category,
+            "budget":            prefs.budget,
+            "priorities":        prefs.priorities,
             "brand_constraints": prefs.brand_constraints,
-            "results":  results,
-            "total":    len(results)
+            "results":           results,
+            "total":             len(results)
         })
 
     except Exception as e:
@@ -71,4 +60,5 @@ def search():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
