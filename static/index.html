@@ -215,6 +215,42 @@ svg.price-chart { width:100%;height:100%; }
   box-shadow: 0 30px 60px rgba(0,0,0,0.5), 0 0 40px rgba(79,142,255,0.15) !important;
   z-index: 10;
 }
+
+/* ── MOBILE ANIMATIONS ── */
+@keyframes slideInLeft {
+  from { opacity:0; transform:translateX(-60px); }
+  to   { opacity:1; transform:translateX(0); }
+}
+@keyframes slideInRight {
+  from { opacity:0; transform:translateX(60px); }
+  to   { opacity:1; transform:translateX(0); }
+}
+@keyframes popIn {
+  0%   { opacity:0; transform:scale(0.8); }
+  70%  { transform:scale(1.05); }
+  100% { opacity:1; transform:scale(1); }
+}
+.card-animate-left  { animation: slideInLeft  0.5s cubic-bezier(0.16,1,0.3,1) both; }
+.card-animate-right { animation: slideInRight 0.5s cubic-bezier(0.16,1,0.3,1) both; }
+.card-animate-pop   { animation: popIn        0.5s cubic-bezier(0.16,1,0.3,1) both; }
+
+/* touch press effect */
+.product-card:active {
+  transform: scale(0.96) !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;
+  transition: transform 0.1s ease, box-shadow 0.1s ease !important;
+}
+
+/* scroll reveal */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.16,1,0.3,1);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
 </style>
 </head>
 <body>
@@ -569,6 +605,44 @@ document.addEventListener('mouseleave', () => {
     card.style.transform = '';
   });
 });
+
+
+// ─── MOBILE ANIMATIONS ───
+function applyMobileCardAnimations() {
+  const cards = document.querySelectorAll('.product-card');
+  const types = ['card-animate-left', 'card-animate-right', 'card-animate-pop'];
+  cards.forEach((card, i) => {
+    card.classList.remove('card-animate-left','card-animate-right','card-animate-pop');
+    void card.offsetWidth;
+    const type = types[i % types.length];
+    card.classList.add(type);
+    card.style.animationDelay = `${i * 0.07}s`;
+  });
+}
+
+// scroll reveal for chips and sections
+function initScrollReveal() {
+  const els = document.querySelectorAll('.alert-card, .compare-table-wrap, .chart-card');
+  els.forEach(el => el.classList.add('reveal'));
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  els.forEach(el => observer.observe(el));
+}
+
+// hook into renderGrid
+const _origRenderGrid = renderGrid;
+function renderGrid(products) {
+  _origRenderGrid(products);
+  setTimeout(applyMobileCardAnimations, 50);
+}
+
+initScrollReveal();
 
 </script>
 </body>
