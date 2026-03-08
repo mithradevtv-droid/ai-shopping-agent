@@ -238,7 +238,7 @@ svg.price-chart { width:100%;height:100%; }
 <div id="view-search" class="view active">
   <section class="hero-section" id="hero-section">
     <div class="hero-eyebrow"><div class="pulse-dot"></div>Powered by AI Agents</div>
-    <h1 class="hero-title">The AI that <span class="italic grad">fynds</span><br>your best deal.</h1>
+    <h1 class="hero-title"><span id="typewriter"></span></h1>
     <p class="hero-sub">Describe what you're looking for in plain language. Fyndr scans 50+ stores, kills fake reviews, and surfaces the smartest deals — instantly.</p>
     <div class="search-wrap">
       <div class="search-outer">
@@ -536,6 +536,60 @@ function removeAlert(btn) {
   btn.closest('.alert-card').style.animation='fadeUp 0.3s reverse both';
   setTimeout(()=>btn.closest('.alert-card').remove(), 280);
 }
+
+// ─── TYPEWRITER ───
+const TW_TEXTS = [
+  'The AI that fynds your best deal.',
+  'The AI that kills fake reviews.',
+  'The AI that saves you money.',
+  'The AI that shops smarter.'
+];
+let twIdx = 0, twChar = 0, twDeleting = false;
+const twEl = document.getElementById('typewriter');
+function typeWriter() {
+  if (!twEl) return;
+  const current = TW_TEXTS[twIdx];
+  if (!twDeleting) {
+    twChar++;
+    const plain = current.slice(0, twChar);
+    const highlighted = plain.replace('fynds', '<span class="italic grad">fynds</span>')
+                             .replace('kills', '<span class="italic grad">kills</span>')
+                             .replace('saves', '<span class="italic grad">saves</span>')
+                             .replace('shops', '<span class="italic grad">shops</span>');
+    twEl.innerHTML = highlighted;
+    if (twChar === current.length) { twDeleting = true; setTimeout(typeWriter, 2000); return; }
+  } else {
+    twChar--;
+    const plain = current.slice(0, twChar);
+    twEl.innerHTML = plain;
+    if (twChar === 0) { twDeleting = false; twIdx = (twIdx + 1) % TW_TEXTS.length; }
+  }
+  setTimeout(typeWriter, twDeleting ? 40 : 80);
+}
+typeWriter();
+
+// ─── CARD TILT ───
+document.addEventListener('mousemove', e => {
+  document.querySelectorAll('.product-card').forEach(card => {
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    if (x < 0 || y < 0 || x > rect.width || y > rect.height) {
+      card.style.transform = '';
+      return;
+    }
+    const cx = rect.width / 2, cy = rect.height / 2;
+    const rotateX = ((y - cy) / cy) * -8;
+    const rotateY = ((x - cx) / cx) * 8;
+    card.style.transform = `perspective(600px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-6px)`;
+  });
+});
+document.addEventListener('mouseleave', () => {
+  document.querySelectorAll('.product-card').forEach(card => {
+    card.style.transform = '';
+  });
+});
+
 </script>
 </body>
 </html>
