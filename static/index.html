@@ -206,6 +206,15 @@ svg.price-chart { width:100%;height:100%; }
   .product-grid.list-view .product-card { flex-direction:column;height:auto; }
   .product-grid.list-view .card-img-wrap { width:100%;height:180px;border-right:none;border-bottom:1px solid var(--border); }
 }
+
+.product-card {
+  transition: transform 0.3s cubic-bezier(0.16,1,0.3,1), box-shadow 0.3s ease;
+}
+.product-card:hover {
+  transform: scale(1.06) translateY(-8px) !important;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.5), 0 0 40px rgba(79,142,255,0.15) !important;
+  z-index: 10;
+}
 </style>
 </head>
 <body>
@@ -238,7 +247,7 @@ svg.price-chart { width:100%;height:100%; }
 <div id="view-search" class="view active">
   <section class="hero-section" id="hero-section">
     <div class="hero-eyebrow"><div class="pulse-dot"></div>Powered by AI Agents</div>
-    <h1 class="hero-title"><span id="typewriter"></span></h1>
+    <h1 class="hero-title">The AI that <span class="italic grad">fynds</span><br>your best deal.</h1>
     <p class="hero-sub">Describe what you're looking for in plain language. Fyndr scans 50+ stores, kills fake reviews, and surfaces the smartest deals — instantly.</p>
     <div class="search-wrap">
       <div class="search-outer">
@@ -537,36 +546,7 @@ function removeAlert(btn) {
   setTimeout(()=>btn.closest('.alert-card').remove(), 280);
 }
 
-// ─── TYPEWRITER ───
-const TW_TEXTS = [
-  'The AI that fynds your best deal.',
-  'The AI that kills fake reviews.',
-  'The AI that saves you money.',
-  'The AI that shops smarter.'
-];
-let twIdx = 0, twChar = 0, twDeleting = false;
-const twEl = document.getElementById('typewriter');
-function typeWriter() {
-  if (!twEl) return;
-  const current = TW_TEXTS[twIdx];
-  if (!twDeleting) {
-    twChar++;
-    const plain = current.slice(0, twChar);
-    const highlighted = plain.replace('fynds', '<span class="italic grad">fynds</span>')
-                             .replace('kills', '<span class="italic grad">kills</span>')
-                             .replace('saves', '<span class="italic grad">saves</span>')
-                             .replace('shops', '<span class="italic grad">shops</span>');
-    twEl.innerHTML = highlighted;
-    if (twChar === current.length) { twDeleting = true; setTimeout(typeWriter, 2000); return; }
-  } else {
-    twChar--;
-    const plain = current.slice(0, twChar);
-    twEl.innerHTML = plain;
-    if (twChar === 0) { twDeleting = false; twIdx = (twIdx + 1) % TW_TEXTS.length; }
-  }
-  setTimeout(typeWriter, twDeleting ? 40 : 80);
-}
-typeWriter();
+
 
 // ─── CARD TILT ───
 document.addEventListener('mousemove', e => {
